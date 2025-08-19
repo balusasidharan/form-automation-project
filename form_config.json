@@ -1,8 +1,18 @@
 {
   "url": "https://example.com/application-form",
+  "dismiss_cookie_banner": true,
+  "cookie_banner_config": {
+    "selector_type": "xpath",
+    "selector": "//button[@aria-label='Close']"
+  },
   "pages": [
     {
       "name": "ZIP Code Entry Page",
+      "dismiss_cookie_banner": true,
+      "cookie_banner_config": {
+        "selector_type": "xpath",
+        "selector": "//button[@aria-label='Close']"
+      },
       "wait_for_page_ready": {
         "selector": "zipcode",
         "selector_type": "id",

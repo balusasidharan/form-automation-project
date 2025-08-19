@@ -55,12 +55,79 @@ class FormAutomation:
         
         logger.info("WebDriver initialized successfully")
         
-    def load_page(self, url: str):
-        """Load the target web page"""
+    def dismiss_cookie_banner(self, banner_config: Optional[Dict] = None):
+        """Dismiss cookie banner if present"""
+        try:
+            # Default cookie banner selectors to try
+            default_selectors = [
+                {"selector_type": "xpath", "selector": "//button[@aria-label='Close']"},
+                {"selector_type": "xpath", "selector": "//button[contains(@aria-label, 'close')]"},
+                {"selector_type": "xpath", "selector": "//button[contains(@class, 'cookie') and contains(@class, 'close')]"},
+                {"selector_type": "xpath", "selector": "//button[contains(@id, 'cookie') and contains(@id, 'close')]"},
+                {"selector_type": "xpath", "selector": "//button[contains(text(), 'Accept')]"},
+                {"selector_type": "xpath", "selector": "//button[contains(text(), 'OK')]"},
+                {"selector_type": "xpath", "selector": "//button[contains(text(), 'Got it')]"},
+                {"selector_type": "css_selector", "selector": "[data-testid*='cookie'] button"},
+                {"selector_type": "css_selector", "selector": ".cookie-banner button"},
+                {"selector_type": "css_selector", "selector": "#cookie-banner button"}
+            ]
+            
+            selectors_to_try = []
+            
+            # Use custom banner config if provided
+            if banner_config:
+                selectors_to_try.append({
+                    "selector_type": banner_config.get("selector_type", "xpath"),
+                    "selector": banner_config.get("selector")
+                })
+            
+            # Add default selectors
+            selectors_to_try.extend(default_selectors)
+            
+            for selector_config in selectors_to_try:
+                try:
+                    selector_type = selector_config["selector_type"]
+                    selector = selector_config["selector"]
+                    
+                    if not selector:
+                        continue
+                        
+                    by_type = getattr(By, selector_type.upper())
+                    
+                    # Try to find the element with a short timeout
+                    element = WebDriverWait(self.driver, 3).until(
+                        EC.element_to_be_clickable((by_type, selector))
+                    )
+                    
+                    element.click()
+                    logger.info(f"Successfully dismissed cookie banner using selector: {selector}")
+                    time.sleep(1)  # Wait for banner to disappear
+                    return True
+                    
+                except TimeoutException:
+                    continue
+                except Exception as e:
+                    logger.debug(f"Failed to dismiss banner with selector {selector}: {str(e)}")
+                    continue
+            
+            logger.debug("No cookie banner found or banner already dismissed")
+            return False
+            
+        except Exception as e:
+            logger.error(f"Error while trying to dismiss cookie banner: {str(e)}")
+            return False
+
+    def load_page(self, url: str, dismiss_banner: bool = True, banner_config: Optional[Dict] = None):
+        """Load the target web page and optionally dismiss cookie banner"""
         try:
             self.driver.get(url)
             logger.info(f"Successfully loaded page: {url}")
             time.sleep(2)
+            
+            # Try to dismiss cookie banner if requested
+            if dismiss_banner:
+                self.dismiss_cookie_banner(banner_config)
+                
         except Exception as e:
             logger.error(f"Failed to load page {url}: {str(e)}")
             raise
@@ -276,6 +343,11 @@ class FormAutomation:
             page_name = page_config.get('name', f'Page {page_index + 1}')
             logger.info(f"Processing {page_name}")
             
+            # Dismiss cookie banner if configured for this page
+            if page_config.get('dismiss_cookie_banner', page_index == 0):  # Default to first page only
+                banner_config = page_config.get('cookie_banner_config')
+                self.dismiss_cookie_banner(banner_config)
+            
             # Wait for page to be ready if configured
             if page_config.get('wait_for_page_ready'):
                 page_ready_config = page_config['wait_for_page_ready']
@@ -390,8 +462,12 @@ def main():
         if not url:
             logger.error("No URL specified in configuration")
             return
-            
-        automation.load_page(url)
+        
+        # Check if cookie banner dismissal is configured globally
+        dismiss_banner = config.get('dismiss_cookie_banner', True)
+        banner_config = config.get('cookie_banner_config')
+        
+        automation.load_page(url, dismiss_banner, banner_config)
         
         # Fill and submit form
         success = automation.fill_form_from_config(config)
