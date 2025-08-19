@@ -1,0 +1,66 @@
+{
+  "url": "https://example.com/application-form",
+  "fields": [
+    {
+      "type": "text",
+      "selector": "firstName",
+      "selector_type": "id",
+      "value": "John"
+    },
+    {
+      "type": "text",
+      "selector": "lastName",
+      "selector_type": "id",
+      "value": "Doe"
+    },
+    {
+      "type": "text",
+      "selector": "email",
+      "selector_type": "id",
+      "value": "john.doe@example.com"
+    },
+    {
+      "type": "text",
+      "selector": "phone",
+      "selector_type": "id",
+      "value": "+1234567890"
+    },
+    {
+      "type": "dropdown",
+      "selector": "country",
+      "selector_type": "id",
+      "value": "United States"
+    },
+    {
+      "type": "text",
+      "selector": "address",
+      "selector_type": "id",
+      "value": "123 Main Street"
+    },
+    {
+      "type": "text",
+      "selector": "city",
+      "selector_type": "id",
+      "value": "New York"
+    },
+    {
+      "type": "text",
+      "selector": "zipcode",
+      "selector_type": "id",
+      "value": "10001"
+    },
+    {
+      "type": "click",
+      "selector": "terms",
+      "selector_type": "id",
+      "value": null
+    }
+  ],
+  "submit": {
+    "selector": "submitBtn",
+    "selector_type": "id",
+    "wait_for_confirmation": true,
+    "confirmation_selector": "success-message",
+    "confirmation_selector_type": "class_name"
+  }
+}

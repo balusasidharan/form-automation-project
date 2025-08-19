@@ -1,0 +1,158 @@
+{
+  "url": "https://example.com/application-form",
+  "pages": [
+    {
+      "name": "ZIP Code Entry Page",
+      "wait_for_page_ready": {
+        "selector": "zipcode",
+        "selector_type": "id",
+        "timeout": 30
+      },
+      "fields": [
+        {
+          "type": "text",
+          "selector": "zipcode",
+          "selector_type": "id",
+          "value": "10001"
+        }
+      ],
+      "navigation": {
+        "type": "submit",
+        "selector": "zipSubmitBtn",
+        "selector_type": "id",
+        "wait_time": 3,
+        "wait_for_element": {
+          "selector": "firstName",
+          "selector_type": "id",
+          "timeout": 30
+        }
+      },
+      "take_screenshot": true,
+      "screenshot_name": "zip_code_page.png"
+    },
+    {
+      "name": "Personal Details Page",
+      "wait_for_page_ready": {
+        "selector": "firstName",
+        "selector_type": "id",
+        "timeout": 30
+      },
+      "fields": [
+        {
+          "type": "text",
+          "selector": "firstName",
+          "selector_type": "id",
+          "value": "John"
+        },
+        {
+          "type": "text",
+          "selector": "lastName",
+          "selector_type": "id",
+          "value": "Doe"
+        },
+        {
+          "type": "text",
+          "selector": "email",
+          "selector_type": "id",
+          "value": "john.doe@example.com"
+        },
+        {
+          "type": "text",
+          "selector": "phone",
+          "selector_type": "id",
+          "value": "+1234567890"
+        }
+      ],
+      "navigation": {
+        "type": "click",
+        "selector": "nextBtn",
+        "selector_type": "id",
+        "wait_time": 2,
+        "wait_for_element": {
+          "selector": "address",
+          "selector_type": "id",
+          "timeout": 30
+        }
+      },
+      "take_screenshot": true,
+      "screenshot_name": "personal_details_page.png"
+    },
+    {
+      "name": "Address Details Page",
+      "wait_for_page_ready": {
+        "selector": "address",
+        "selector_type": "id",
+        "timeout": 30
+      },
+      "fields": [
+        {
+          "type": "dropdown",
+          "selector": "country",
+          "selector_type": "id",
+          "value": "United States"
+        },
+        {
+          "type": "text",
+          "selector": "address",
+          "selector_type": "id",
+          "value": "123 Main Street"
+        },
+        {
+          "type": "text",
+          "selector": "city",
+          "selector_type": "id",
+          "value": "New York"
+        },
+        {
+          "type": "text",
+          "selector": "state",
+          "selector_type": "id",
+          "value": "NY"
+        }
+      ],
+      "navigation": {
+        "type": "click",
+        "selector": "nextBtn",
+        "selector_type": "id",
+        "wait_time": 2,
+        "wait_for_element": {
+          "selector": "terms",
+          "selector_type": "id",
+          "timeout": 30
+        }
+      },
+      "take_screenshot": true,
+      "screenshot_name": "address_details_page.png"
+    },
+    {
+      "name": "Final Submission Page",
+      "wait_for_page_ready": {
+        "selector": "terms",
+        "selector_type": "id",
+        "timeout": 30
+      },
+      "fields": [
+        {
+          "type": "click",
+          "selector": "terms",
+          "selector_type": "id",
+          "value": null
+        }
+      ],
+      "navigation": {
+        "type": "submit",
+        "selector": "submitBtn",
+        "selector_type": "id",
+        "wait_time": 5,
+        "wait_for_element": {
+          "selector": "success-message",
+          "selector_type": "class_name",
+          "timeout": 30
+        }
+      },
+      "take_screenshot": true,
+      "screenshot_name": "final_submission_page.png",
+      "continue_on_error": false
+    }
+  ]
+}
