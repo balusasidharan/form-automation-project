@@ -42,7 +42,7 @@ ENV/
 
 # WebDriver cache and drivers
 .wdm/
-drivers/
+
 
 # IDE
 .vscode/
