@@ -43,11 +43,19 @@ class FormAutomation:
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--window-size=1920,1080")
         
-        # Get ChromeDriver path and fix the path issue
-        driver_path = ChromeDriverManager().install()
-        # Fix the path if it points to the wrong file
-        if driver_path.endswith('THIRD_PARTY_NOTICES.chromedriver'):
-            driver_path = driver_path.replace('THIRD_PARTY_NOTICES.chromedriver', 'chromedriver')
+        # Check for custom ChromeDriver path first
+        custom_driver_path = os.getenv('CHROMEDRIVER_PATH')
+        
+        if custom_driver_path and os.path.exists(custom_driver_path):
+            logger.info(f"Using custom ChromeDriver path: {custom_driver_path}")
+            driver_path = custom_driver_path
+        else:
+            # Fall back to ChromeDriverManager
+            logger.info("Using ChromeDriverManager to get ChromeDriver")
+            driver_path = ChromeDriverManager().install()
+            # Fix the path if it points to the wrong file
+            if driver_path.endswith('THIRD_PARTY_NOTICES.chromedriver'):
+                driver_path = driver_path.replace('THIRD_PARTY_NOTICES.chromedriver', 'chromedriver')
         
         service = Service(driver_path)
         self.driver = webdriver.Chrome(service=service, options=chrome_options)

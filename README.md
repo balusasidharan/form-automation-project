@@ -76,6 +76,7 @@ Set in `.env` file:
 - `CONFIG_FILE`: Path to configuration file (default: form_config.json)
 - `HEADLESS`: Run browser in headless mode (true/false)
 - `TIMEOUT`: Element wait timeout in seconds
+- `CHROMEDRIVER_PATH`: Custom path to ChromeDriver executable (optional - avoids downloading every time)
 
 ## Examples
 
@@ -131,11 +132,36 @@ Set in `.env` file:
 }
 ```
 
+## Using Custom ChromeDriver Path
+
+To avoid downloading ChromeDriver every time you run the script:
+
+1. **Download ChromeDriver manually:**
+   - Visit https://chromedriver.chromium.org/
+   - Download the version matching your Chrome browser
+   - Extract the executable
+
+2. **Set the path in .env file:**
+   ```bash
+   CHROMEDRIVER_PATH=/path/to/your/chromedriver
+   ```
+   
+   Example paths:
+   - macOS: `CHROMEDRIVER_PATH=/usr/local/bin/chromedriver`
+   - Linux: `CHROMEDRIVER_PATH=/usr/local/bin/chromedriver`
+   - Windows: `CHROMEDRIVER_PATH=C:\chromedriver\chromedriver.exe`
+
+3. **Make executable (macOS/Linux):**
+   ```bash
+   chmod +x /path/to/your/chromedriver
+   ```
+
 ## Troubleshooting
 
 1. **Element not found**: Check selector and selector_type in your configuration
 2. **Timeout errors**: Increase timeout value in .env file
-3. **ChromeDriver issues**: The script automatically downloads the correct ChromeDriver version
+3. **ChromeDriver issues**: The script automatically downloads the correct ChromeDriver version, or set `CHROMEDRIVER_PATH` for custom path
+4. **Permission errors**: Make sure ChromeDriver executable has proper permissions (`chmod +x`)
 
 ## Security Notes
 

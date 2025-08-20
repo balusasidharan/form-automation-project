@@ -40,8 +40,9 @@ ENV/
 *.gif
 *.log
 
-# WebDriver cache
+# WebDriver cache and drivers
 .wdm/
+drivers/
 
 # IDE
 .vscode/
