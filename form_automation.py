@@ -52,7 +52,7 @@ class FormAutomation:
         else:
             # Fall back to ChromeDriverManager
             logger.info("Using ChromeDriverManager to get ChromeDriver")
-            driver_path = ChromeDriverManager().install()
+            
             # Fix the path if it points to the wrong file
             if driver_path.endswith('THIRD_PARTY_NOTICES.chromedriver'):
                 driver_path = driver_path.replace('THIRD_PARTY_NOTICES.chromedriver', 'chromedriver')
