@@ -64,11 +64,36 @@ Edit `form_config.json` to configure your form automation:
 
 ## Usage
 
+### Basic Usage
+
 1. **Update configuration:** Modify `form_config.json` with your target form's URL and field details
 2. **Run the automation:**
    ```bash
    python form_automation.py
    ```
+
+### With Test Data Generation
+
+1. **Configure test data generator:** Update `test_data_config.json` with your test data generator page details
+2. **Run with state code for test data generation:**
+   ```bash
+   python form_automation.py --state CA
+   ```
+3. **Additional options:**
+   ```bash
+   # Run in headless mode
+   python form_automation.py --state NY --headless
+   
+   # Use custom configuration files
+   python form_automation.py --state TX --config my_form_config.json --test-data-config my_test_config.json
+   ```
+
+### Command Line Arguments
+
+- `--state, -s`: State code for test data generation (e.g., CA, NY, TX)
+- `--headless`: Run browser in headless mode
+- `--config, -c`: Custom form configuration file (default: form_config.json)
+- `--test-data-config, -t`: Custom test data configuration file (default: test_data_config.json)
 
 ## Environment Variables
 
@@ -76,7 +101,6 @@ Set in `.env` file:
 - `CONFIG_FILE`: Path to configuration file (default: form_config.json)
 - `HEADLESS`: Run browser in headless mode (true/false)
 - `TIMEOUT`: Element wait timeout in seconds
-- `CHROMEDRIVER_PATH`: Custom path to ChromeDriver executable (optional - avoids downloading every time)
 
 ## Examples
 
@@ -132,36 +156,68 @@ Set in `.env` file:
 }
 ```
 
-## Using Custom ChromeDriver Path
+## Test Data Generation
 
-To avoid downloading ChromeDriver every time you run the script:
+The tool supports automatic test data generation by visiting a separate test data generator page before filling the main form.
 
-1. **Download ChromeDriver manually:**
-   - Visit https://chromedriver.chromium.org/
-   - Download the version matching your Chrome browser
-   - Extract the executable
+### Configuration
 
-2. **Set the path in .env file:**
-   ```bash
-   CHROMEDRIVER_PATH=/path/to/your/chromedriver
-   ```
-   
-   Example paths:
-   - macOS: `CHROMEDRIVER_PATH=/usr/local/bin/chromedriver`
-   - Linux: `CHROMEDRIVER_PATH=/usr/local/bin/chromedriver`
-   - Windows: `CHROMEDRIVER_PATH=C:\chromedriver\chromedriver.exe`
+Update `test_data_config.json` with your test data generator details:
 
-3. **Make executable (macOS/Linux):**
-   ```bash
-   chmod +x /path/to/your/chromedriver
-   ```
+```json
+{
+  "test_data_generation": {
+    "enabled": true,
+    "url": "https://your-test-generator.com",
+    "state_dropdown": {
+      "selector": "state",
+      "selector_type": "id"
+    },
+    "generate_button": {
+      "selector": "generateBtn", 
+      "selector_type": "id"
+    },
+    "output_fields": {
+      "zipCode": {"selector": "zipCode", "selector_type": "id"},
+      "mbi": {"selector": "mbi", "selector_type": "id"},
+      "ssn": {"selector": "ssn", "selector_type": "id"}
+    }
+  }
+}
+```
+
+### Workflow
+
+1. **Generate Test Data**: Tool visits the test data generator page
+2. **Select State**: Chooses the provided state code from dropdown
+3. **Generate Values**: Clicks generate button to create random values
+4. **Extract Data**: Captures zipCode, mbi, and ssn values
+5. **Substitute Values**: Replaces placeholders in form configuration
+6. **Fill Form**: Proceeds with form automation using generated data
+
+### Using Placeholders
+
+In your `form_config.json`, use placeholders that will be replaced with generated values:
+
+```json
+{
+  "type": "text",
+  "selector": "zipcode",
+  "selector_type": "id", 
+  "value": "{{zipCode}}"
+}
+```
+
+Available placeholders:
+- `{{zipCode}}` - Generated ZIP code
+- `{{mbi}}` - Generated MBI number  
+- `{{ssn}}` - Generated SSN
 
 ## Troubleshooting
 
 1. **Element not found**: Check selector and selector_type in your configuration
 2. **Timeout errors**: Increase timeout value in .env file
-3. **ChromeDriver issues**: The script automatically downloads the correct ChromeDriver version, or set `CHROMEDRIVER_PATH` for custom path
-4. **Permission errors**: Make sure ChromeDriver executable has proper permissions (`chmod +x`)
+3. **ChromeDriver issues**: The script automatically downloads the correct ChromeDriver version
 
 ## Security Notes
 

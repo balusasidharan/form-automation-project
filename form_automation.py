@@ -7,6 +7,7 @@ Automates filling and submitting application forms on web pages.
 import time
 import json
 import logging
+import argparse
 from typing import Dict, List, Optional
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -17,6 +18,7 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from webdriver_manager.chrome import ChromeDriverManager
 from dotenv import load_dotenv
 import os
+from test_data_generator import generate_test_data_for_state
 
 load_dotenv()
 
@@ -43,25 +45,51 @@ class FormAutomation:
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--window-size=1920,1080")
         
-        # Check for custom ChromeDriver path first
-        custom_driver_path = os.getenv('CHROMEDRIVER_PATH')
-        
-        if custom_driver_path and os.path.exists(custom_driver_path):
-            logger.info(f"Using custom ChromeDriver path: {custom_driver_path}")
-            driver_path = custom_driver_path
-        else:
-            # Fall back to ChromeDriverManager
-            logger.info("Using ChromeDriverManager to get ChromeDriver")
-            
-            # Fix the path if it points to the wrong file
-            if driver_path.endswith('THIRD_PARTY_NOTICES.chromedriver'):
-                driver_path = driver_path.replace('THIRD_PARTY_NOTICES.chromedriver', 'chromedriver')
+        # Get ChromeDriver path and fix the path issue
+        driver_path = ChromeDriverManager().install()
+        # Fix the path if it points to the wrong file
+        if driver_path.endswith('THIRD_PARTY_NOTICES.chromedriver'):
+            driver_path = driver_path.replace('THIRD_PARTY_NOTICES.chromedriver', 'chromedriver')
         
         service = Service(driver_path)
         self.driver = webdriver.Chrome(service=service, options=chrome_options)
         self.wait = WebDriverWait(self.driver, self.timeout)
         
         logger.info("WebDriver initialized successfully")
+        
+    def substitute_generated_values(self, config: Dict, generated_data: Dict):
+        """Substitute generated test data values in configuration"""
+        if not generated_data:
+            return config
+            
+        # Create a copy of the config to avoid modifying the original
+        import copy
+        updated_config = copy.deepcopy(config)
+        
+        # Substitute values in pages
+        if 'pages' in updated_config:
+            for page in updated_config['pages']:
+                if 'fields' in page:
+                    for field in page['fields']:
+                        field_value = field.get('value')
+                        # Check if the value should be substituted
+                        if field_value in ['{{zipCode}}', '{{mbi}}', '{{ssn}}']:
+                            data_key = field_value.strip('{}')
+                            if data_key in generated_data:
+                                field['value'] = generated_data[data_key]
+                                logger.info(f"Substituted {field_value} with {generated_data[data_key]}")
+        
+        # Substitute values in legacy single page fields
+        if 'fields' in updated_config:
+            for field in updated_config['fields']:
+                field_value = field.get('value')
+                if field_value in ['{{zipCode}}', '{{mbi}}', '{{ssn}}']:
+                    data_key = field_value.strip('{}')
+                    if data_key in generated_data:
+                        field['value'] = generated_data[data_key]
+                        logger.info(f"Substituted {field_value} with {generated_data[data_key]}")
+        
+        return updated_config
         
     def dismiss_cookie_banner(self, banner_config: Optional[Dict] = None):
         """Dismiss cookie banner if present"""
@@ -448,12 +476,38 @@ class FormAutomation:
 def main():
     """Main function to run the form automation"""
     
-    # Example usage
-    automation = FormAutomation(headless=False)
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Form Automation with Test Data Generation')
+    parser.add_argument('--state', '-s', type=str, help='State code for test data generation (e.g., CA, NY, TX)')
+    parser.add_argument('--headless', action='store_true', help='Run browser in headless mode')
+    parser.add_argument('--config', '-c', type=str, default='form_config.json', help='Form configuration file')
+    parser.add_argument('--test-data-config', '-t', type=str, default='test_data_config.json', help='Test data configuration file')
+    
+    args = parser.parse_args()
+    
+    # Determine headless mode
+    headless_mode = args.headless or os.getenv('HEADLESS', 'false').lower() == 'true'
+    
+    automation = FormAutomation(headless=headless_mode)
+    generated_data = {}
     
     try:
+        # Generate test data if state code is provided
+        if args.state:
+            logger.info(f"Generating test data for state: {args.state}")
+            generated_data = generate_test_data_for_state(
+                args.state, 
+                config_file=args.test_data_config, 
+                headless=headless_mode
+            )
+            
+            if generated_data:
+                logger.info(f"Generated test data: {generated_data}")
+            else:
+                logger.warning("Failed to generate test data, proceeding with default values")
+        
         # Load configuration
-        config_file = os.getenv('CONFIG_FILE', 'form_config.json')
+        config_file = args.config
         
         if not os.path.exists(config_file):
             logger.error(f"Configuration file {config_file} not found")
@@ -461,6 +515,10 @@ def main():
             
         with open(config_file, 'r') as f:
             config = json.load(f)
+        
+        # Substitute generated values in configuration
+        if generated_data:
+            config = automation.substitute_generated_values(config, generated_data)
             
         # Initialize driver
         automation.setup_driver()

@@ -1,0 +1,39 @@
+{
+  "test_data_generation": {
+    "enabled": true,
+    "url": "https://example.com/test-data-generator",
+    "dismiss_cookie_banner": true,
+    "cookie_banner_config": {
+      "selector_type": "xpath",
+      "selector": "//button[@aria-label='Close']"
+    },
+    "state_dropdown": {
+      "selector": "state",
+      "selector_type": "id"
+    },
+    "generate_button": {
+      "selector": "generateBtn",
+      "selector_type": "id"
+    },
+    "output_fields": {
+      "zipCode": {
+        "selector": "zipCode",
+        "selector_type": "id"
+      },
+      "mbi": {
+        "selector": "mbi",
+        "selector_type": "id"
+      },
+      "ssn": {
+        "selector": "ssn",
+        "selector_type": "id"
+      }
+    },
+    "wait_time_after_generate": 3,
+    "wait_for_generation": {
+      "selector": "zipCode",
+      "selector_type": "id",
+      "timeout": 30
+    }
+  }
+}

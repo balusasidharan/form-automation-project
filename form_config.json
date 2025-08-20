@@ -23,7 +23,7 @@
           "type": "text",
           "selector": "zipcode",
           "selector_type": "id",
-          "value": "10001"
+          "value": "{{zipCode}}"
         }
       ],
       "navigation": {
