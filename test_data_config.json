@@ -1,39 +1,43 @@
 {
   "test_data_generation": {
     "enabled": true,
-    "url": "https://example.com/test-data-generator",
-    "dismiss_cookie_banner": true,
-    "cookie_banner_config": {
-      "selector_type": "xpath",
-      "selector": "//button[@aria-label='Close']"
-    },
+    "url": "file:///Users/balusasidharanpillai/form-automation-project/TestDataGenerator.html",
+    "dismiss_cookie_banner": false,
     "state_dropdown": {
-      "selector": "state",
+      "selector": "stateSelect",
       "selector_type": "id"
     },
     "generate_button": {
-      "selector": "generateBtn",
+      "selector": "generateButton",
       "selector_type": "id"
     },
     "output_fields": {
-      "zipCode": {
-        "selector": "zipCode",
+      "firstName": {
+        "selector": "firstName",
         "selector_type": "id"
       },
-      "mbi": {
-        "selector": "mbi",
+      "lastName": {
+        "selector": "lastName",
         "selector_type": "id"
       },
       "ssn": {
         "selector": "ssn",
         "selector_type": "id"
+      },
+      "address": {
+        "selector": "address",
+        "selector_type": "id"
+      },
+      "phone": {
+        "selector": "phone",
+        "selector_type": "id"
       }
     },
-    "wait_time_after_generate": 3,
+    "wait_time_after_generate": 2,
     "wait_for_generation": {
-      "selector": "zipCode",
+      "selector": "firstName",
       "selector_type": "id",
-      "timeout": 30
+      "timeout": 10
     }
   }
 }

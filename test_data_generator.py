@@ -180,6 +180,10 @@ class TestDataGenerator:
             
             extracted_data = {}
             
+            # Debug: Extract all field values and store in data structure
+            field_values = {}
+            logger.info("=== EXTRACTING FIELD VALUES AFTER GENERATE BUTTON CLICK ===")
+            
             for field_name, field_config in output_fields.items():
                 try:
                     selector = field_config.get('selector')
@@ -191,11 +195,18 @@ class TestDataGenerator:
                     # Get the value (try value attribute first, then text content)
                     value = element.get_attribute('value') or element.text
                     extracted_data[field_name] = value
-                    logger.info(f"Extracted {field_name}: {value}")
+                    field_values[field_name] = value
                     
                 except Exception as e:
                     logger.error(f"Failed to extract {field_name}: {str(e)}")
                     extracted_data[field_name] = None
+                    field_values[field_name] = None
+            
+            # Print the data structure with extracted values
+            logger.info("=== EXTRACTED FIELD VALUES DATA STRUCTURE ===")
+            for field_name, value in field_values.items():
+                logger.info(f"  {field_name}: '{value}'")
+            logger.info("=== END FIELD VALUES ===")
             
             self.generated_data = extracted_data
             return extracted_data

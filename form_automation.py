@@ -502,7 +502,10 @@ def main():
             )
             
             if generated_data:
-                logger.info(f"Generated test data: {generated_data}")
+                logger.info("=== GENERATED TEST DATA BEFORE FORM AUTOMATION ===")
+                for key, value in generated_data.items():
+                    logger.info(f"  {key}: '{value}'")
+                logger.info("=== END GENERATED DATA ===")
             else:
                 logger.warning("Failed to generate test data, proceeding with default values")
         

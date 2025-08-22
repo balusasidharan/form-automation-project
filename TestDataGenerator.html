@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State Codes Select Box</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 400px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: white;
+            cursor: pointer;
+        }
+        select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .output-field {
+            margin-bottom: 10px;
+        }
+        .output-field label {
+            display: inline-block;
+            width: 100px;
+            margin-bottom: 5px;
+        }
+        .output-field input {
+            width: calc(100% - 110px);
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .selected-state {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e8f5e8;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <label for="stateSelect">Select a State:</label>
+        <select id="stateSelect" name="state" onchange="showSelection()">
+            <option value="">-- Please choose a state --</option>
+            <option value="AL">AL - Alabama</option>
+            <option value="AK">AK - Alaska</option>
+            <option value="AZ">AZ - Arizona</option>
+            <option value="AR">AR - Arkansas</option>
+            <option value="CA">CA - California</option>
+            <option value="CO">CO - Colorado</option>
+            <option value="CT">CT - Connecticut</option>
+            <option value="DE">DE - Delaware</option>
+            <option value="FL">FL - Florida</option>
+            <option value="GA">GA - Georgia</option>
+            <option value="HI">HI - Hawaii</option>
+            <option value="ID">ID - Idaho</option>
+            <option value="IL">IL - Illinois</option>
+            <option value="IN">IN - Indiana</option>
+            <option value="IA">IA - Iowa</option>
+            <option value="KS">KS - Kansas</option>
+            <option value="KY">KY - Kentucky</option>
+            <option value="LA">LA - Louisiana</option>
+            <option value="ME">ME - Maine</option>
+            <option value="MD">MD - Maryland</option>
+            <option value="MA">MA - Massachusetts</option>
+            <option value="MI">MI - Michigan</option>
+            <option value="MN">MN - Minnesota</option>
+            <option value="MS">MS - Mississippi</option>
+            <option value="MO">MO - Missouri</option>
+            <option value="MT">MT - Montana</option>
+            <option value="NE">NE - Nebraska</option>
+            <option value="NV">NV - Nevada</option>
+            <option value="NH">NH - New Hampshire</option>
+            <option value="NJ">NJ - New Jersey</option>
+            <option value="NM">NM - New Mexico</option>
+            <option value="NY">NY - New York</option>
+            <option value="NC">NC - North Carolina</option>
+            <option value="ND">ND - North Dakota</option>
+            <option value="OH">OH - Ohio</option>
+            <option value="OK">OK - Oklahoma</option>
+            <option value="OR">OR - Oregon</option>
+            <option value="PA">PA - Pennsylvania</option>
+            <option value="RI">RI - Rhode Island</option>
+            <option value="SC">SC - South Carolina</option>
+            <option value="SD">SD - South Dakota</option>
+            <option value="TN">TN - Tennessee</option>
+            <option value="TX">TX - Texas</option>
+            <option value="UT">UT - Utah</option>
+            <option value="VT">VT - Vermont</option>
+            <option value="VA">VA - Virginia</option>
+            <option value="WA">WA - Washington</option>
+            <option value="WV">WV - West Virginia</option>
+            <option value="WI">WI - Wisconsin</option>
+            <option value="WY">WY - Wyoming</option>
+            <option value="DC">DC - District of Columbia</option>
+        </select>
+        <div class="button-container">
+        <button id="generateButton" onclick="generateData()">Generate Test Data</button>
+        </div>
+        <div id="selectedState" class="selected-state">
+            <strong>Selected State Code:</strong> <span id="stateCode"></span>
+        </div>
+        
+        <div id="outputFields" style="display: none; margin-top: 20px;">
+            <h3>Generated Test Data:</h3>
+            <div class="output-field">
+                <label>First Name:</label>
+                <input type="text" id="firstName" readonly>
+            </div>
+            <div class="output-field">
+                <label>Last Name:</label>
+                <input type="text" id="lastName" readonly>
+            </div>
+            <div class="output-field">
+                <label>SSN:</label>
+                <input type="text" id="ssn" readonly>
+            </div>
+            <div class="output-field">
+                <label>Address:</label>
+                <input type="text" id="address" readonly>
+            </div>
+            <div class="output-field">
+                <label>Phone:</label>
+                <input type="text" id="phone" readonly>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSelection() {
+            const select = document.getElementById('stateSelect');
+            const selectedDiv = document.getElementById('selectedState');
+            const stateCodeSpan = document.getElementById('stateCode');
+            
+            if (select.value) {
+                stateCodeSpan.textContent = select.value;
+                selectedDiv.style.display = 'block';
+            } else {
+                selectedDiv.style.display = 'none';
+            }
+        }
+        
+        function generateData() {
+            const select = document.getElementById('stateSelect');
+            const outputFields = document.getElementById('outputFields');
+            
+            if (!select.value) {
+                alert('Please select a state first!');
+                return;
+            }
+            
+            // Simulate data generation
+            const sampleData = {
+                'CA': {
+                    firstName: 'John',
+                    lastName: 'Doe',
+                    ssn: '123-45-6789',
+                    address: '123 Main St, Los Angeles, CA 90210',
+                    phone: '(555) 123-4567'
+                },
+                'TX': {
+                    firstName: 'Jane',
+                    lastName: 'Smith',
+                    ssn: '987-65-4321',
+                    address: '456 Oak Ave, Houston, TX 77001',
+                    phone: '(555) 987-6543'
+                },
+                'NY': {
+                    firstName: 'Bob',
+                    lastName: 'Johnson',
+                    ssn: '555-44-3333',
+                    address: '789 Broadway, New York, NY 10001',
+                    phone: '(555) 444-3333'
+                }
+            };
+            
+            const data = sampleData[select.value] || {
+                firstName: 'Test',
+                lastName: 'User',
+                ssn: '000-00-0000',
+                address: `123 Test St, Test City, ${select.value} 00000`,
+                phone: '(555) 000-0000'
+            };
+            
+            // Populate fields
+            document.getElementById('firstName').value = data.firstName;
+            document.getElementById('lastName').value = data.lastName;
+            document.getElementById('ssn').value = data.ssn;
+            document.getElementById('address').value = data.address;
+            document.getElementById('phone').value = data.phone;
+            
+            // Show output fields
+            outputFields.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
