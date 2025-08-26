@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 class FormAutomation:
-    def __init__(self, headless: bool = False, timeout: int = 10):
+    def __init__(self, headless: bool = False, timeout: int = 5):
         self.headless = headless
         self.timeout = timeout
         self.driver = None
@@ -202,18 +202,28 @@ class FormAutomation:
             
     def fill_text_field(self, selector: str, value: str, selector_type: str = "id"):
         """Fill a text field with the given value"""
+        import time
+        start_time = time.time()
         try:
             by_type = getattr(By, selector_type.upper())
-            element = self.wait.until(EC.presence_of_element_located((by_type, selector)))
+            logger.info(f"Looking for field: {selector} (type: {selector_type})")
+            # Wait for element to be both present and interactable
+            element = self.wait.until(EC.element_to_be_clickable((by_type, selector)))
+            find_time = time.time()
+            logger.info(f"Found field {selector} in {find_time - start_time:.2f} seconds")
+            
             element.clear()
             element.send_keys(value)
-            logger.info(f"Filled field {selector} with value: {value}")
+            total_time = time.time() - start_time
+            logger.info(f"Filled field {selector} with value: {value} (total time: {total_time:.2f}s)")
             return True
         except TimeoutException:
-            logger.error(f"Field {selector} not found or not interactable")
+            total_time = time.time() - start_time
+            logger.error(f"Field {selector} not found or not interactable within {self.timeout} seconds (waited {total_time:.2f}s)")
             return False
         except Exception as e:
-            logger.error(f"Error filling field {selector}: {str(e)}")
+            total_time = time.time() - start_time
+            logger.error(f"Error filling field {selector}: {str(e)} (time: {total_time:.2f}s)")
             return False
             
     def select_dropdown(self, selector: str, value: str, selector_type: str = "id"):
@@ -335,7 +345,7 @@ class FormAutomation:
                 if self.upload_file(selector, value, selector_type):
                     success_count += 1
                     
-            time.sleep(0.5)  # Small delay between actions
+            time.sleep(0.2)  # Reduced delay between actions
             
         logger.info(f"Successfully filled {success_count}/{total_fields} fields on current page")
         return success_count == total_fields
@@ -493,10 +503,15 @@ class FormAutomation:
     def take_screenshot(self, filename: str = "screenshot.png"):
         """Take a screenshot of the current page"""
         try:
+            if self.driver is None:
+                logger.error("Cannot take screenshot: WebDriver not initialized")
+                return False
             self.driver.save_screenshot(filename)
             logger.info(f"Screenshot saved as {filename}")
+            return True
         except Exception as e:
             logger.error(f"Error taking screenshot: {str(e)}")
+            return False
             
     def close(self):
         """Close the browser and clean up"""

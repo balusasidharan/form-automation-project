@@ -52,13 +52,13 @@
           "type": "text",
           "selector": "firstName",
           "selector_type": "id",
-          "value": "John"
+          "value": "{{firstName}}"
         },
         {
           "type": "text",
           "selector": "lastName",
           "selector_type": "id",
-          "value": "Doe"
+          "value": "{{lastName}}"
         },
         {
           "type": "text",
@@ -105,7 +105,7 @@
           "type": "text",
           "selector": "address",
           "selector_type": "id",
-          "value": "123 Main Street"
+          "value": "{{address}}"
         },
         {
           "type": "text",
