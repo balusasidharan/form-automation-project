@@ -105,7 +105,7 @@ class RandomValuesGenerator:
         return address
     
     def generate_dob_for_65_year_old(self):
-        """Generate date of birth for a person who is 65 years old in MM/dd/yyyy format"""
+        """Generate date of birth for a person who is 65 years old and return components"""
         current_date = datetime.now()
         birth_year = current_date.year - 65
         
@@ -123,9 +123,24 @@ class RandomValuesGenerator:
         else:  # All other months have 31 days
             birth_day = random.randint(1, 31)
         
-        dob = f"{birth_month:02d}/{birth_day:02d}/{birth_year}"
-        logger.info(f"Generated date of birth (age 65): {dob}")
-        return dob
+        # Format full date
+        dob_full = f"{birth_month:02d}/{birth_day:02d}/{birth_year}"
+        
+        # Create individual components
+        dob_components = {
+            'dateOfBirth': dob_full,
+            'dobMonth': f"{birth_month:02d}",
+            'dobDay': f"{birth_day:02d}",
+            'dobYear': str(birth_year),
+            'dobMonthNum': birth_month,
+            'dobDayNum': birth_day,
+            'dobYearNum': birth_year
+        }
+        
+        logger.info(f"Generated date of birth (age 65): {dob_full}")
+        logger.info(f"DOB components - Month: {birth_month:02d}, Day: {birth_day:02d}, Year: {birth_year}")
+        
+        return dob_components
     
     def _is_leap_year(self, year):
         """Check if a year is a leap year"""
@@ -140,7 +155,7 @@ class RandomValuesGenerator:
         ssn = self.generate_random_ssn()
         address = self.generate_random_address()
         zip_code = self.generate_random_zip_code(state_code)
-        dob = self.generate_dob_for_65_year_old()
+        dob_components = self.generate_dob_for_65_year_old()
         
         person_data = {
             'firstName': first_name,
@@ -148,9 +163,11 @@ class RandomValuesGenerator:
             'ssn': ssn,
             'address': address,
             'zipCode': zip_code,
-            'dateOfBirth': dob,
             'state': state_code.upper() if state_code else None
         }
+        
+        # Add all DOB components to person data
+        person_data.update(dob_components)
         
         # Store in cache for reuse across pages
         self.generated_data_cache = person_data.copy()
@@ -195,6 +212,9 @@ class RandomValuesGenerator:
         print(f"Address: {person['address']}")
         print(f"Zip Code: {person['zipCode']}")
         print(f"Date of Birth: {person['dateOfBirth']}")
+        print(f"DOB Month: {person['dobMonth']}")
+        print(f"DOB Day: {person['dobDay']}")
+        print(f"DOB Year: {person['dobYear']}")
         if state_code:
             print(f"State: {state_code.upper()}")
         print("=" * 40)

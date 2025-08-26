@@ -88,6 +88,12 @@ class FormAutomation:
             '{{ssn}}': 'ssn',
             '{{address}}': 'address',
             '{{dateOfBirth}}': 'dateOfBirth',
+            '{{dobMonth}}': 'dobMonth',
+            '{{dobDay}}': 'dobDay', 
+            '{{dobYear}}': 'dobYear',
+            '{{dobMonthNum}}': 'dobMonthNum',
+            '{{dobDayNum}}': 'dobDayNum',
+            '{{dobYearNum}}': 'dobYearNum',
             '{{mbi}}': 'ssn'  # Use SSN for MBI if needed
         }
         
