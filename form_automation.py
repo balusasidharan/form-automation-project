@@ -18,7 +18,7 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from webdriver_manager.chrome import ChromeDriverManager
 from dotenv import load_dotenv
 import os
-from test_data_generator import generate_test_data_for_state
+from random_values_generator import generate_test_data_for_state, RandomValuesGenerator
 
 load_dotenv()
 
@@ -32,6 +32,19 @@ class FormAutomation:
         self.timeout = timeout
         self.driver = None
         self.wait = None
+        # Create a persistent random values generator instance
+        self.random_generator = RandomValuesGenerator()
+        self.generated_data = {}
+        
+    def get_generated_value(self, field_name):
+        """Get a specific generated value by field name with logging"""
+        if field_name in self.generated_data:
+            value = self.generated_data[field_name]
+            logger.info(f"Retrieved generated value for '{field_name}': {value}")
+            return value
+        else:
+            logger.warning(f"Generated value for '{field_name}' not found")
+            return None
         
     def setup_driver(self):
         """Initialize Chrome WebDriver with options"""
@@ -60,35 +73,54 @@ class FormAutomation:
     def substitute_generated_values(self, config: Dict, generated_data: Dict):
         """Substitute generated test data values in configuration"""
         if not generated_data:
+            logger.warning("No generated data available for substitution")
             return config
             
         # Create a copy of the config to avoid modifying the original
         import copy
         updated_config = copy.deepcopy(config)
         
+        logger.info("=== STARTING VALUE SUBSTITUTION ===")
+        substitution_map = {
+            '{{zipCode}}': 'zipCode',
+            '{{firstName}}': 'firstName', 
+            '{{lastName}}': 'lastName',
+            '{{ssn}}': 'ssn',
+            '{{address}}': 'address',
+            '{{dateOfBirth}}': 'dateOfBirth',
+            '{{mbi}}': 'ssn'  # Use SSN for MBI if needed
+        }
+        
         # Substitute values in pages
         if 'pages' in updated_config:
-            for page in updated_config['pages']:
+            for page_idx, page in enumerate(updated_config['pages']):
+                page_name = page.get('name', f'Page {page_idx + 1}')
+                logger.info(f"Processing substitutions for {page_name}")
                 if 'fields' in page:
                     for field in page['fields']:
                         field_value = field.get('value')
-                        # Check if the value should be substituted
-                        if field_value in ['{{zipCode}}', '{{mbi}}', '{{ssn}}']:
-                            data_key = field_value.strip('{}')
+                        if field_value in substitution_map:
+                            data_key = substitution_map[field_value]
                             if data_key in generated_data:
                                 field['value'] = generated_data[data_key]
-                                logger.info(f"Substituted {field_value} with {generated_data[data_key]}")
+                                logger.info(f"  Substituted {field_value} -> {generated_data[data_key]} (field: {field.get('selector', 'unknown')})")
+                            else:
+                                logger.warning(f"  Data key '{data_key}' not found in generated data")
         
         # Substitute values in legacy single page fields
         if 'fields' in updated_config:
+            logger.info("Processing substitutions for single page fields")
             for field in updated_config['fields']:
                 field_value = field.get('value')
-                if field_value in ['{{zipCode}}', '{{mbi}}', '{{ssn}}']:
-                    data_key = field_value.strip('{}')
+                if field_value in substitution_map:
+                    data_key = substitution_map[field_value]
                     if data_key in generated_data:
                         field['value'] = generated_data[data_key]
-                        logger.info(f"Substituted {field_value} with {generated_data[data_key]}")
+                        logger.info(f"  Substituted {field_value} -> {generated_data[data_key]} (field: {field.get('selector', 'unknown')})")
+                    else:
+                        logger.warning(f"  Data key '{data_key}' not found in generated data")
         
+        logger.info("=== VALUE SUBSTITUTION COMPLETE ===")
         return updated_config
         
     def dismiss_cookie_banner(self, banner_config: Optional[Dict] = None):
@@ -495,17 +527,14 @@ def main():
         # Generate test data if state code is provided
         if args.state:
             logger.info(f"Generating test data for state: {args.state}")
-            generated_data = generate_test_data_for_state(
-                args.state, 
-                config_file=args.test_data_config, 
-                headless=headless_mode
-            )
+            generated_data = automation.random_generator.generate_complete_random_person(args.state)
+            automation.generated_data = generated_data
             
             if generated_data:
-                logger.info("=== GENERATED TEST DATA BEFORE FORM AUTOMATION ===")
+                logger.info("=== FORM AUTOMATION WILL USE THIS DATA ===")
                 for key, value in generated_data.items():
                     logger.info(f"  {key}: '{value}'")
-                logger.info("=== END GENERATED DATA ===")
+                logger.info("=== DATA READY FOR MULTI-PAGE USE ===")
             else:
                 logger.warning("Failed to generate test data, proceeding with default values")
         
