@@ -109,6 +109,13 @@ class RandomValuesGenerator:
         current_date = datetime.now()
         birth_year = current_date.year - 65
         
+        # Month names mapping
+        month_names = {
+            1: 'January', 2: 'February', 3: 'March', 4: 'April',
+            5: 'May', 6: 'June', 7: 'July', 8: 'August',
+            9: 'September', 10: 'October', 11: 'November', 12: 'December'
+        }
+        
         # Random month and day
         birth_month = random.randint(1, 12)
         
@@ -125,6 +132,7 @@ class RandomValuesGenerator:
         
         # Format full date
         dob_full = f"{birth_month:02d}/{birth_day:02d}/{birth_year}"
+        month_name = month_names[birth_month]
         
         # Create individual components
         dob_components = {
@@ -132,13 +140,14 @@ class RandomValuesGenerator:
             'dobMonth': f"{birth_month:02d}",
             'dobDay': f"{birth_day:02d}",
             'dobYear': str(birth_year),
+            'dobMonthName': month_name,
             'dobMonthNum': birth_month,
             'dobDayNum': birth_day,
             'dobYearNum': birth_year
         }
         
         logger.info(f"Generated date of birth (age 65): {dob_full}")
-        logger.info(f"DOB components - Month: {birth_month:02d}, Day: {birth_day:02d}, Year: {birth_year}")
+        logger.info(f"DOB components - Month: {birth_month:02d} ({month_name}), Day: {birth_day:02d}, Year: {birth_year}")
         
         return dob_components
     
@@ -212,7 +221,7 @@ class RandomValuesGenerator:
         print(f"Address: {person['address']}")
         print(f"Zip Code: {person['zipCode']}")
         print(f"Date of Birth: {person['dateOfBirth']}")
-        print(f"DOB Month: {person['dobMonth']}")
+        print(f"DOB Month: {person['dobMonth']} ({person['dobMonthName']})")
         print(f"DOB Day: {person['dobDay']}")
         print(f"DOB Year: {person['dobYear']}")
         if state_code:

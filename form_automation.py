@@ -91,6 +91,7 @@ class FormAutomation:
             '{{dobMonth}}': 'dobMonth',
             '{{dobDay}}': 'dobDay', 
             '{{dobYear}}': 'dobYear',
+            '{{dobMonthName}}': 'dobMonthName',
             '{{dobMonthNum}}': 'dobMonthNum',
             '{{dobDayNum}}': 'dobDayNum',
             '{{dobYearNum}}': 'dobYearNum',
