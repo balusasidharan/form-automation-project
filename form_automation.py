@@ -323,19 +323,87 @@ class FormAutomation:
             return False
             
     def select_dropdown(self, selector: str, value: str, selector_type: str = "id"):
-        """Select an option from a dropdown"""
+        """Select an option from a dropdown with multiple strategies"""
+        import time
+        start_time = time.time()
         try:
             by_type = getattr(By, selector_type.upper())
+            logger.info(f"Looking for dropdown: {selector} (type: {selector_type})")
             element = self.wait.until(EC.presence_of_element_located((by_type, selector)))
+            find_time = time.time()
+            logger.info(f"Found dropdown {selector} in {find_time - start_time:.2f} seconds")
+            
             select = Select(element)
-            select.select_by_visible_text(value)
-            logger.info(f"Selected '{value}' from dropdown {selector}")
-            return True
+            
+            # Log all available options for debugging
+            options = select.options
+            logger.info(f"Available options in dropdown {selector}:")
+            for i, option in enumerate(options):
+                logger.info(f"  Option {i}: value='{option.get_attribute('value')}' text='{option.text.strip()}'")
+            
+            # Strategy 1: Try selecting by visible text (exact match)
+            try:
+                select.select_by_visible_text(value)
+                total_time = time.time() - start_time
+                logger.info(f"Selected '{value}' from dropdown {selector} by visible text (time: {total_time:.2f}s)")
+                return True
+            except Exception as e1:
+                logger.warning(f"Strategy 1 failed - exact visible text '{value}': {str(e1)}")
+            
+            # Strategy 2: Try selecting by value (for cases like value="01" text="January")
+            # Convert month names to numbers
+            month_mapping = {
+                'january': '01', 'february': '02', 'march': '03', 'april': '04',
+                'may': '05', 'june': '06', 'july': '07', 'august': '08',
+                'september': '09', 'october': '10', 'november': '11', 'december': '12'
+            }
+            
+            if value.lower() in month_mapping:
+                try:
+                    month_value = month_mapping[value.lower()]
+                    select.select_by_value(month_value)
+                    total_time = time.time() - start_time
+                    logger.info(f"Selected '{value}' from dropdown {selector} by value '{month_value}' (time: {total_time:.2f}s)")
+                    return True
+                except Exception as e2:
+                    logger.warning(f"Strategy 2 failed - by value '{month_value}': {str(e2)}")
+            
+            # Strategy 3: Try partial text matching (case insensitive)
+            try:
+                for option in options:
+                    option_text = option.text.strip().lower()
+                    if value.lower() in option_text or option_text in value.lower():
+                        option.click()
+                        total_time = time.time() - start_time
+                        logger.info(f"Selected '{value}' from dropdown {selector} by partial match with '{option.text.strip()}' (time: {total_time:.2f}s)")
+                        return True
+            except Exception as e3:
+                logger.warning(f"Strategy 3 failed - partial text matching: {str(e3)}")
+            
+            # Strategy 4: Try selecting by index if value is numeric
+            try:
+                if value.isdigit():
+                    index = int(value) - 1  # Convert to 0-based index
+                    if 0 <= index < len(options):
+                        select.select_by_index(index)
+                        total_time = time.time() - start_time
+                        logger.info(f"Selected option at index {index} from dropdown {selector} (time: {total_time:.2f}s)")
+                        return True
+            except Exception as e4:
+                logger.warning(f"Strategy 4 failed - by index: {str(e4)}")
+            
+            # All strategies failed
+            total_time = time.time() - start_time
+            logger.error(f"All selection strategies failed for dropdown {selector} with value '{value}' (time: {total_time:.2f}s)")
+            return False
+            
         except TimeoutException:
-            logger.error(f"Dropdown {selector} not found")
+            total_time = time.time() - start_time
+            logger.error(f"Dropdown {selector} not found within {self.timeout} seconds (waited {total_time:.2f}s)")
             return False
         except Exception as e:
-            logger.error(f"Error selecting from dropdown {selector}: {str(e)}")
+            total_time = time.time() - start_time
+            logger.error(f"Error selecting from dropdown {selector}: {str(e)} (time: {total_time:.2f}s)")
             return False
             
     def click_element(self, selector: str, selector_type: str = "id"):
@@ -439,6 +507,10 @@ class FormAutomation:
                 if self.fill_text_field(selector, value, selector_type):
                     success_count += 1
             elif field_type == 'dropdown':
+                if self.select_dropdown(selector, value, selector_type):
+                    success_count += 1
+            elif field_type == 'month_dropdown':
+                # Special handling for month dropdowns that use values like "01" but display "January"
                 if self.select_dropdown(selector, value, selector_type):
                     success_count += 1
             elif field_type == 'click':
