@@ -1,0 +1,109 @@
+{
+  "url": "https://example.com/application-form",
+  "dismiss_cookie_banner": true,
+  "pages": [
+    {
+      "name": "ZIP Code Entry Page",
+      "fields": [
+        {
+          "type": "text",
+          "selector": "zipcode",
+          "selector_type": "id",
+          "value": "{{zipCode}}"
+        }
+      ],
+      "navigation": {
+        "type": "submit",
+        "selector": "zipSubmitBtn",
+        "selector_type": "id",
+        "wait_time": 3
+      },
+      "take_screenshot": true,
+      "screenshot_name": "zip_code_page.png"
+    },
+    {
+      "name": "Personal Details Page",
+      "fields": [
+        {
+          "type": "text",
+          "selector": "firstName",
+          "selector_type": "id",
+          "value": "{{firstName}}"
+        },
+        {
+          "type": "text",
+          "selector": "lastName",
+          "selector_type": "id",
+          "value": "{{lastName}}"
+        },
+        {
+          "name": "Birth Month Dropdown",
+          "type": "manual_interaction",
+          "selector": "birthMonth",
+          "selector_type": "id",
+          "instructions": "Please select your birth month from the dropdown. The suggested value is {{dobMonthName}}."
+        },
+        {
+          "name": "Birth Day Dropdown",
+          "type": "manual_interaction", 
+          "selector": "birthDay",
+          "selector_type": "id",
+          "instructions": "Please select day {{dobDay}} from the dropdown.",
+          "wait_time": 10
+        },
+        {
+          "type": "dropdown",
+          "selector": "birthYear",
+          "selector_type": "id",
+          "value": "{{dobYear}}"
+        }
+      ],
+      "navigation": {
+        "type": "click",
+        "selector": "nextBtn",
+        "selector_type": "id",
+        "wait_time": 2
+      },
+      "take_screenshot": true,
+      "screenshot_name": "personal_details_page.png"
+    },
+    {
+      "name": "Address Details Page", 
+      "fields": [
+        {
+          "type": "text",
+          "selector": "address",
+          "selector_type": "id",
+          "value": "{{address}}"
+        },
+        {
+          "name": "Country Selection",
+          "type": "manual_interaction",
+          "selector": "country",
+          "selector_type": "id", 
+          "instructions": "Please select 'United States' from the country dropdown."
+        },
+        {
+          "type": "text",
+          "selector": "city",
+          "selector_type": "id",
+          "value": "New York"
+        },
+        {
+          "name": "State Dropdown",
+          "type": "manual_interaction",
+          "selector": "state",
+          "selector_type": "id",
+          "instructions": "Please select the state that matches your ZIP code {{zipCode}}."
+        }
+      ],
+      "navigation": {
+        "type": "submit",
+        "selector": "submitBtn",
+        "selector_type": "id"
+      },
+      "take_screenshot": true,
+      "screenshot_name": "address_details_page.png"
+    }
+  ]
+}

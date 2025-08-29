@@ -1,0 +1,126 @@
+{
+  "url": "https://example.com/application-form",
+  "dismiss_cookie_banner": true,
+  "pages": [
+    {
+      "name": "Personal Information Page",
+      "fields": [
+        {
+          "name": "First Name",
+          "type": "text",
+          "selector": "firstName",
+          "selector_type": "id",
+          "value": "{{firstName}}"
+        },
+        {
+          "name": "Last Name", 
+          "type": "text",
+          "selector": "lastName",
+          "selector_type": "id",
+          "value": "{{lastName}}"
+        },
+        {
+          "name": "Email Address",
+          "type": "user_input",
+          "actual_type": "text",
+          "selector": "email",
+          "selector_type": "id",
+          "default_value": "user@example.com",
+          "validation": {
+            "pattern": "^[\\w\\.-]+@[\\w\\.-]+\\.[a-zA-Z]{2,}$",
+            "min_length": 5,
+            "max_length": 100
+          }
+        },
+        {
+          "name": "Phone Number",
+          "type": "user_input",
+          "actual_type": "text",
+          "selector": "phone",
+          "selector_type": "id",
+          "validation": {
+            "pattern": "^\\+?[1-9]\\d{1,14}$",
+            "min_length": 10
+          }
+        }
+      ],
+      "navigation": {
+        "type": "click",
+        "selector": "nextBtn",
+        "selector_type": "id",
+        "wait_time": 2
+      }
+    },
+    {
+      "name": "Birth Information Page",
+      "fields": [
+        {
+          "name": "Birth Month",
+          "type": "user_input",
+          "actual_type": "dropdown",
+          "selector": "birthMonth",
+          "selector_type": "id",
+          "default_value": "{{dobMonthName}}",
+          "validation": {
+            "options": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+          }
+        },
+        {
+          "name": "Birth Day",
+          "type": "dropdown",
+          "selector": "birthDay", 
+          "selector_type": "id",
+          "value": "{{dobDay}}"
+        },
+        {
+          "name": "Birth Year",
+          "type": "dropdown",
+          "selector": "birthYear",
+          "selector_type": "id", 
+          "value": "{{dobYear}}"
+        },
+        {
+          "name": "Social Security Number",
+          "type": "text",
+          "selector": "ssn",
+          "selector_type": "id",
+          "value": "{{ssn}}"
+        }
+      ],
+      "navigation": {
+        "type": "submit",
+        "selector": "submitBtn",
+        "selector_type": "id"
+      }
+    },
+    {
+      "name": "Address Information Page",
+      "fields": [
+        {
+          "name": "Street Address",
+          "type": "text",
+          "selector": "address",
+          "selector_type": "id",
+          "value": "{{address}}"
+        },
+        {
+          "name": "ZIP Code",
+          "type": "text", 
+          "selector": "zipCode",
+          "selector_type": "id",
+          "value": "{{zipCode}}"
+        },
+        {
+          "name": "Preferred Contact Method",
+          "type": "user_input",
+          "actual_type": "dropdown",
+          "selector": "contactMethod",
+          "selector_type": "id",
+          "validation": {
+            "options": ["Email", "Phone", "Mail"]
+          }
+        }
+      ]
+    }
+  ]
+}

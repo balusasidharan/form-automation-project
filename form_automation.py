@@ -86,6 +86,7 @@ class FormAutomation:
             '{{firstName}}': 'firstName', 
             '{{lastName}}': 'lastName',
             '{{ssn}}': 'ssn',
+            '{{phone}}': 'phone',
             '{{address}}': 'address',
             '{{dateOfBirth}}': 'dateOfBirth',
             '{{dobMonth}}': 'dobMonth',
@@ -95,6 +96,20 @@ class FormAutomation:
             '{{dobMonthNum}}': 'dobMonthNum',
             '{{dobDayNum}}': 'dobDayNum',
             '{{dobYearNum}}': 'dobYearNum',
+            # Beneficiary placeholders
+            '{{beneficiaryFirstName}}': 'beneficiaryFirstName',
+            '{{beneficiaryLastName}}': 'beneficiaryLastName',
+            '{{beneficiaryRelation}}': 'beneficiaryRelation',
+            '{{beneficiaryAge}}': 'beneficiaryAge',
+            '{{beneficiaryPhone}}': 'beneficiaryPhone',
+            '{{beneficiaryDateOfBirth}}': 'beneficiaryDateOfBirth',
+            '{{beneficiaryDobMonth}}': 'beneficiaryDobMonth',
+            '{{beneficiaryDobDay}}': 'beneficiaryDobDay',
+            '{{beneficiaryDobYear}}': 'beneficiaryDobYear',
+            '{{beneficiaryDobMonthName}}': 'beneficiaryDobMonthName',
+            '{{beneficiaryDobMonthNum}}': 'beneficiaryDobMonthNum',
+            '{{beneficiaryDobDayNum}}': 'beneficiaryDobDayNum',
+            '{{beneficiaryDobYearNum}}': 'beneficiaryDobYearNum',
             '{{mbi}}': 'ssn'  # Use SSN for MBI if needed
         }
         
@@ -207,6 +222,80 @@ class FormAutomation:
             logger.error(f"Failed to load page {url}: {str(e)}")
             raise
             
+    def pause_for_manual_interaction(self, field_name: str, field_selector: str, instructions: str = None, wait_time: int = None, selector_type: str = "id"):
+        """Pause automation for manual user interaction with browser"""
+        print(f"\n=== MANUAL INTERACTION REQUIRED ===")
+        print(f"Field: {field_name}")
+        print(f"Selector: {field_selector}")
+        
+        if instructions:
+            print(f"Instructions: {instructions}")
+        else:
+            print(f"Please manually interact with the '{field_name}' element in the browser.")
+        
+        print(f"Browser window should be visible for you to interact with.")
+        print("After completing your interaction, press Enter to continue automation...")
+        
+        # Highlight the element if possible
+        try:
+            by_type = getattr(By, selector_type.upper())
+            elements = self.driver.find_elements(by_type, field_selector)
+            if elements:
+                element = elements[0]
+                # Scroll element into view
+                self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+                # Highlight the element with a red border
+                self.driver.execute_script("arguments[0].style.border='3px solid red'", element)
+                logger.info(f"Highlighted element '{field_selector}' for manual interaction")
+            else:
+                logger.warning(f"Could not find element '{field_selector}' to highlight")
+        except Exception as e:
+            logger.warning(f"Could not highlight element '{field_selector}': {str(e)}")
+        
+        # Wait for user to complete interaction
+        if wait_time:
+            print(f"Automation will continue automatically after {wait_time} seconds...")
+            time.sleep(wait_time)
+        else:
+            input()
+        
+        # Remove highlight
+        try:
+            if elements:
+                self.driver.execute_script("arguments[0].style.border=''", elements[0])
+        except:
+            pass
+        
+        print("Continuing automation...")
+        print("=" * 40)
+        logger.info(f"Manual interaction completed for '{field_name}'")
+    
+    def _validate_user_input(self, value: str, validation: dict) -> bool:
+        """Validate user input against validation rules"""
+        import re
+        
+        # Check minimum length
+        if validation.get('min_length') and len(value) < validation['min_length']:
+            print(f"Input too short. Minimum length: {validation['min_length']}")
+            return False
+        
+        # Check maximum length  
+        if validation.get('max_length') and len(value) > validation['max_length']:
+            print(f"Input too long. Maximum length: {validation['max_length']}")
+            return False
+        
+        # Check pattern
+        if validation.get('pattern') and not re.match(validation['pattern'], value):
+            print(f"Input doesn't match required pattern: {validation['pattern']}")
+            return False
+        
+        # Check valid options
+        if validation.get('options') and value not in validation['options']:
+            print(f"Invalid option. Valid options: {', '.join(validation['options'])}")
+            return False
+        
+        return True
+
     def fill_text_field(self, selector: str, value: str, selector_type: str = "id"):
         """Fill a text field with the given value"""
         import time
@@ -338,8 +427,15 @@ class FormAutomation:
             selector = field.get('selector')
             selector_type = field.get('selector_type', 'id')
             value = field.get('value')
+            field_name = field.get('name', selector)  # Use name or fallback to selector
             
-            if field_type == 'text':
+            # Check if this field requires manual interaction
+            if field_type == 'manual_interaction':
+                instructions = field.get('instructions')
+                wait_time = field.get('wait_time')
+                self.pause_for_manual_interaction(field_name, selector, instructions, wait_time, selector_type)
+                success_count += 1  # Assume manual interaction was successful
+            elif field_type == 'text':
                 if self.fill_text_field(selector, value, selector_type):
                     success_count += 1
             elif field_type == 'dropdown':
@@ -536,6 +632,7 @@ def main():
     parser.add_argument('--headless', action='store_true', help='Run browser in headless mode')
     parser.add_argument('--config', '-c', type=str, default='form_config.json', help='Form configuration file')
     parser.add_argument('--test-data-config', '-t', type=str, default='test_data_config.json', help='Test data configuration file')
+    parser.add_argument('--keep-open', action='store_true', help='Keep browser open after completion')
     
     args = parser.parse_args()
     
@@ -600,12 +697,19 @@ def main():
         # Take screenshot for verification
         automation.take_screenshot("form_completion.png")
         
-        # Wait a bit before closing
-        time.sleep(3)
+        # Keep browser open if requested
+        if args.keep_open:
+            input("Press Enter to close the browser and continue...")
+        else:
+            time.sleep(3)
         
     except Exception as e:
         logger.error(f"Error in main execution: {str(e)}")
         automation.take_screenshot("error_screenshot.png")
+        
+        # Keep browser open on error if requested
+        if args.keep_open:
+            input("Error occurred. Press Enter to close the browser...")
         
     finally:
         automation.close()

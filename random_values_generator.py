@@ -104,6 +104,126 @@ class RandomValuesGenerator:
         logger.info(f"Generated address: {address}")
         return address
     
+    def generate_random_phone(self):
+        """Generate a random phone number"""
+        # Generate phone in format: +1-XXX-XXX-XXXX
+        area_code = random.randint(200, 999)  # Avoid area codes starting with 0 or 1
+        exchange = random.randint(200, 999)   # Avoid exchanges starting with 0 or 1
+        number = random.randint(1000, 9999)   # Last 4 digits
+        phone = f"+1-{area_code}-{exchange}-{number}"
+        logger.info(f"Generated phone number: {phone}")
+        return phone
+    
+    def generate_beneficiary_data(self, primary_dob_year):
+        """Generate beneficiary information with appropriate age relationships"""
+        relations = ['spouse', 'son', 'daughter', 'child']
+        relation = random.choice(relations)
+        
+        # Generate beneficiary based on relation
+        if relation == 'spouse':
+            # Spouse: similar age (within 10 years)
+            age_difference = random.randint(-10, 10)
+            beneficiary_age = 65 + age_difference
+            # Ensure reasonable age bounds
+            beneficiary_age = max(25, min(85, beneficiary_age))
+            
+            # Generate gender-appropriate name for spouse
+            if random.choice([True, False]):  # Random gender
+                beneficiary_first_name = self.fake.first_name_female()
+            else:
+                beneficiary_first_name = self.fake.first_name_male()
+                
+        elif relation in ['son', 'daughter', 'child']:
+            # Child: typically 20-45 years younger than primary
+            age_difference = random.randint(20, 45)
+            beneficiary_age = 65 - age_difference
+            # Ensure minimum age of 18
+            beneficiary_age = max(18, beneficiary_age)
+            
+            # Generate gender-appropriate name for child
+            if relation == 'son':
+                beneficiary_first_name = self.fake.first_name_male()
+            elif relation == 'daughter':
+                beneficiary_first_name = self.fake.first_name_female()
+            else:  # 'child' - random gender
+                if random.choice([True, False]):
+                    beneficiary_first_name = self.fake.first_name_female()
+                else:
+                    beneficiary_first_name = self.fake.first_name_male()
+        
+        # Generate last name (could be same as primary for family members)
+        if relation in ['spouse', 'son', 'daughter', 'child'] and random.choice([True, False]):
+            # 50% chance of same last name for family members
+            beneficiary_last_name = "{{lastName}}"  # Will be substituted later
+        else:
+            beneficiary_last_name = self.fake.last_name()
+        
+        # Calculate beneficiary birth year and generate DOB
+        beneficiary_birth_year = datetime.now().year - beneficiary_age
+        beneficiary_dob = self._generate_dob_for_year(beneficiary_birth_year)
+        
+        # Generate beneficiary phone number
+        beneficiary_phone = self.generate_random_phone()
+        
+        beneficiary_data = {
+            'beneficiaryFirstName': beneficiary_first_name,
+            'beneficiaryLastName': beneficiary_last_name,
+            'beneficiaryRelation': relation,
+            'beneficiaryAge': beneficiary_age,
+            'beneficiaryPhone': beneficiary_phone
+        }
+        
+        # Add all beneficiary DOB components
+        beneficiary_data.update(beneficiary_dob)
+        
+        logger.info(f"Generated beneficiary: {beneficiary_first_name} {beneficiary_last_name}")
+        logger.info(f"Beneficiary relation: {relation} (age: {beneficiary_age})")
+        logger.info(f"Beneficiary phone: {beneficiary_phone}")
+        logger.info(f"Beneficiary DOB: {beneficiary_dob['beneficiaryDateOfBirth']}")
+        
+        return beneficiary_data
+    
+    def _generate_dob_for_year(self, birth_year):
+        """Generate date of birth components for a specific year"""
+        # Month names mapping
+        month_names = {
+            1: 'January', 2: 'February', 3: 'March', 4: 'April',
+            5: 'May', 6: 'June', 7: 'July', 8: 'August',
+            9: 'September', 10: 'October', 11: 'November', 12: 'December'
+        }
+        
+        # Random month and day
+        birth_month = random.randint(1, 12)
+        
+        # Handle February and leap years
+        if birth_month == 2:
+            if self._is_leap_year(birth_year):
+                birth_day = random.randint(1, 29)
+            else:
+                birth_day = random.randint(1, 28)
+        elif birth_month in [4, 6, 9, 11]:  # April, June, Sept, Nov have 30 days
+            birth_day = random.randint(1, 30)
+        else:  # All other months have 31 days
+            birth_day = random.randint(1, 31)
+        
+        # Format full date
+        dob_full = f"{birth_month:02d}/{birth_day:02d}/{birth_year}"
+        month_name = month_names[birth_month]
+        
+        # Create individual components with beneficiary prefix
+        dob_components = {
+            'beneficiaryDateOfBirth': dob_full,
+            'beneficiaryDobMonth': f"{birth_month:02d}",
+            'beneficiaryDobDay': f"{birth_day:02d}",
+            'beneficiaryDobYear': str(birth_year),
+            'beneficiaryDobMonthName': month_name,
+            'beneficiaryDobMonthNum': birth_month,
+            'beneficiaryDobDayNum': birth_day,
+            'beneficiaryDobYearNum': birth_year
+        }
+        
+        return dob_components
+    
     def generate_dob_for_65_year_old(self):
         """Generate date of birth for a person who is 65 years old and return components"""
         current_date = datetime.now()
@@ -155,7 +275,7 @@ class RandomValuesGenerator:
         """Check if a year is a leap year"""
         return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
     
-    def generate_complete_random_person(self, state_code=None):
+    def generate_complete_random_person(self, state_code=None, include_beneficiary=True):
         """Generate a complete set of random values for a 65-year-old person"""
         logger.info(f"=== STARTING RANDOM DATA GENERATION ===")
         logger.info(f"Target state: {state_code.upper() if state_code else 'None (using defaults)'}")
@@ -165,6 +285,7 @@ class RandomValuesGenerator:
         address = self.generate_random_address()
         zip_code = self.generate_random_zip_code(state_code)
         dob_components = self.generate_dob_for_65_year_old()
+        phone = self.generate_random_phone()
         
         person_data = {
             'firstName': first_name,
@@ -172,11 +293,24 @@ class RandomValuesGenerator:
             'ssn': ssn,
             'address': address,
             'zipCode': zip_code,
+            'phone': phone,
             'state': state_code.upper() if state_code else None
         }
         
         # Add all DOB components to person data
         person_data.update(dob_components)
+        
+        # Generate beneficiary data if requested
+        if include_beneficiary:
+            primary_birth_year = dob_components['dobYearNum']
+            beneficiary_data = self.generate_beneficiary_data(primary_birth_year)
+            
+            # Handle beneficiary last name substitution
+            if beneficiary_data['beneficiaryLastName'] == "{{lastName}}":
+                beneficiary_data['beneficiaryLastName'] = last_name
+            
+            # Add all beneficiary data to person data
+            person_data.update(beneficiary_data)
         
         # Store in cache for reuse across pages
         self.generated_data_cache = person_data.copy()
@@ -218,6 +352,7 @@ class RandomValuesGenerator:
         print(f"First Name: {person['firstName']}")
         print(f"Last Name: {person['lastName']}")
         print(f"SSN: {person['ssn']}")
+        print(f"Phone: {person['phone']}")
         print(f"Address: {person['address']}")
         print(f"Zip Code: {person['zipCode']}")
         print(f"Date of Birth: {person['dateOfBirth']}")
@@ -226,6 +361,15 @@ class RandomValuesGenerator:
         print(f"DOB Year: {person['dobYear']}")
         if state_code:
             print(f"State: {state_code.upper()}")
+        
+        print("\n=== Beneficiary Information ===")
+        print(f"Beneficiary Name: {person['beneficiaryFirstName']} {person['beneficiaryLastName']}")
+        print(f"Relation: {person['beneficiaryRelation'].title()}")
+        print(f"Age: {person['beneficiaryAge']}")
+        print(f"Phone: {person['beneficiaryPhone']}")
+        print(f"Date of Birth: {person['beneficiaryDateOfBirth']}")
+        print(f"DOB Month: {person['beneficiaryDobMonth']} ({person['beneficiaryDobMonthName']})")
+        
         print("=" * 40)
         
         return person
